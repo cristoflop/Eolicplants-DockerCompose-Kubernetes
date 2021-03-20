@@ -11,10 +11,10 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class TopoClient {
 
-    @Value("topo.server.host")
+    @Value("${topo.server.host}")
     private String TOPO_HOST;
 
-    @Value("topo.server.port")
+    @Value("${topo.server.port}")
     private String TOPO_PORT;
 
     @Async

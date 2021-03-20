@@ -2,7 +2,6 @@ version: "3.9"
 services:
   planner:
     image: cristoflop/planner:latest
-    build: ./planner
     environment:
       - AMQP_USER=guest
       - AMQP_PASS=guest
@@ -18,7 +17,6 @@ services:
       - topo
   server:
     image: cristoflop/server:latest
-    build: ./server
     ports:
       - 8080:3000
     environment:
@@ -28,12 +26,13 @@ services:
       - AMQP_PORT=5672
       - DB_NAME=eoloplants
       - DB_USER=root
+      - DB_PORT=3306
       - DB_PASS=root
       - DB_HOST=sql_db
     depends_on:
       - broker
       - sql_db
-    command: ["./wait-for-it.sh", "sql_db:3306", "--", "node", "src/server.js"]
+    command: ["./wait-for-it.sh", "-t", "0", "sql_db:3306", "--", "./wait-for-it.sh", "-t", "0", "broker:5672", "--", "node", "src/server.js"]
   topo:
     image: cristoflop/toposervice:latest
     expose:
@@ -51,7 +50,8 @@ services:
     expose:
       - 8080
     environment:
-      - PORT=8080
+      - GRPC_HOST=weather
+      - GRPC_PORT=8080
   sql_db:
     image: mysql:8.0.23
     environment:

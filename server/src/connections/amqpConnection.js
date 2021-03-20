@@ -9,7 +9,7 @@ export let amqpChannel;
 const AMQP_USER = process.env.AMQP_USER || 'guest' ;
 const AMQP_PASS = process.env.AMQP_PASS || 'guest' ;
 const AMQP_HOST = process.env.AMQP_HOST || 'localhost' ;
-const AMQP_PORT = process.env.AMQP_PORT || '15672' ;
+const AMQP_PORT = process.env.AMQP_PORT || '5672' ;
 
 export async function connectAmqp() {
 
