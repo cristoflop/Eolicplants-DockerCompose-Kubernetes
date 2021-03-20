@@ -1,0 +1,9 @@
+{
+  "amqp": {
+    "queues": {
+      "progress": "eoloplantCreationProgressNotifications",
+      "creation": "eoloplantCreationRequests"
+    },
+    "options": {"durable": false}
+  }
+}
