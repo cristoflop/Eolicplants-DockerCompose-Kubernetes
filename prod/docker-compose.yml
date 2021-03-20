@@ -1,0 +1,51 @@
+version: "3.9"
+services:
+  planner:
+    image: cristoflop/planner:latest
+    env_file: .env
+    depends_on:
+      - broker
+      - weather
+      - topo
+  server:
+    image: cristoflop/server:latest
+    env_file: .env
+    ports:
+      - 8080:3000
+    depends_on:
+      - broker
+      - sql_db
+    command: ["./wait-for-it.sh", "-t", "0", "sql_db:3306", "--", "./wait-for-it.sh", "-t", "0", "broker:5672", "--", "node", "src/server.js"]
+  topo:
+    image: cristoflop/toposervice:latest
+    env_file: .env
+    expose:
+      - 8080
+    depends_on:
+      - nosql_db
+  weather:
+    image: cristoflop/weatherservice:latest
+    env_file: .env
+    expose:
+      - 8080
+  sql_db:
+    image: mysql:8.0.23
+    env_file: .env
+    expose:
+      - 3306
+    volumes:
+      - ./mysql:/var/lib/mysql
+  nosql_db:
+    image: mongo:4.2.12-bionic
+    env_file: .env
+    expose:
+      - 27017
+    volumes:
+      - ./mongo:/data/db
+  broker:
+    image: rabbitmq:3.8.14-alpine
+    env_file: .env
+    expose:
+      - 5672
+    volumes:
+      - ./broker:/var/lib/rabbitmq

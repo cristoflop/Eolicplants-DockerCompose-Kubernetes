@@ -2,28 +2,21 @@ version: "3.9"
 services:
   sql_db:
     image: mysql:8.0.23
-    environment:
-      - MYSQL_DATABASE=eoloplants
-      - MYSQL_ROOT_PASSWORD=root
+    env_file: .env
     ports:
       - 3306:3306
     volumes:
       - /tmp/mysql:/var/lib/mysql
   nosql_db:
     image: mongo:4.2.12-bionic
-    environment:
-      - MONGO_INITDB_DATABASE=topo_db
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
+    env_file: .env
     ports:
       - 27017:27017
     volumes:
       - /tmp/mongo:/data/db
   broker:
     image: rabbitmq:3.8.14-management-alpine
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
+    env_file: .env
     ports:
       - 15672:15672
       - 5672:5672
