@@ -114,6 +114,6 @@ hs_err_pid*
 */mongo
 */mysql
 
-!.idea/runConfigurations
+!*/runConfigurations
 
 */node_modules
