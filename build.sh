@@ -2,12 +2,9 @@
 
 DOCKERHUB_NAME=cristoflop
 
-echo "Choose one option: "
-echo "1.- Build and push"
-echo "2.- Only build"
-read -r option
+option=$1
 
-if [ "$option" -eq "1" ]; then
+if [ "$option" = "push" ]; then
   build=true
   push=true
 else
