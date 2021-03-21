@@ -4,7 +4,7 @@ DOCKERHUB_NAME=cristoflop
 
 option=$1
 
-if [ "$option" -eq "push" ]; then
+if [ "$option" = "push" ]; then
   build=true
   push=true
 else
