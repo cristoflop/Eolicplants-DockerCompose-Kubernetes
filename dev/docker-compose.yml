@@ -6,14 +6,14 @@ services:
     ports:
       - 3306:3306
     volumes:
-      - /tmp/mysql:/var/lib/mysql
+      - ./mysql:/var/lib/mysql
   nosql_db:
     image: mongo:4.2.12-bionic
     env_file: .env
     ports:
       - 27017:27017
     volumes:
-      - /tmp/mongo:/data/db
+      - ./mongo:/data/db
   broker:
     image: rabbitmq:3.8.14-management-alpine
     env_file: .env
@@ -21,4 +21,4 @@ services:
       - 15672:15672
       - 5672:5672
     volumes:
-      - /tmp/broker:/var/lib/rabbitmq
+      - ./broker:/var/lib/rabbitmq
