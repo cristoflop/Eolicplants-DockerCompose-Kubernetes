@@ -10,24 +10,33 @@ Esta solución está basada en el trabajo entregado por el alumno Miguel García
 
 ## Iniciar servicios auxiliares: MongoDB, MySQL y RabbitMQ
 
-Los servicios auxiliares se ejecutan con la tecnología de contenedores Docker usando el siguiente comando:
+Los servicios auxiliares se ejecutan con la tecnología de contenedores Docker usando el siguiente comando.
+Las variables de entorno están definidas en el fichero .env de la carpeta /dev
 
 ```
-$ node exec_aux_services.js
+$ docker-compose -f dev/docker-compose.yml up -d
 ```
 
-## Construir servicios
+## Construir y publicar imágenes
 
-Descarga las dependencias y construye los proyectos. En proyectos Java usa Maven. En proyectos Node usa NPM:
+Es necesario cambiar la variable DOCKERHUBNAME dentro del script para apuntar al repositorio de DockerHub del usuario.
 
-```
-$ node build.js
-```
-
-## Ejecutar servicios
-
-Ejecuta los servicios. En proyectos Java usa Maven. En proyectos Node usa esta tecnología directamente:
+Si sólo se desea construir las imágenes
 
 ```
-$ node exec.js
+$ ./build.sh
+```
+
+Construir y publicar las imágenes que se generan
+
+```
+$ ./build.sh push
+```
+
+## Desplegar servicios auxiliares + aplicaciones
+
+Las variables de entorno están definidas en el fichero .env de la carpeta /prod
+
+```
+$ docker-compose -f prod/docker-compose.yml up -d
 ```

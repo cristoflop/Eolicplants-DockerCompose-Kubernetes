@@ -1,9 +1,9 @@
-FROM maven:3.6.3-openjdk-11 as builder
+FROM maven as builder
 WORKDIR /project
 COPY pom.xml /project/
+RUN mvn clean verify --fail-never
 COPY src /project/src
-RUN mvn clean verify
-RUN mvn package -o
+RUN mvn package
 
 FROM openjdk:11-jre-slim
 WORKDIR /usr/src/app/
