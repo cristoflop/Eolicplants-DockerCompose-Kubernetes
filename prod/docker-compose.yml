@@ -1,51 +1,81 @@
-version: "3.9"
+version: "3"
 services:
   planner:
     image: cristoflop/planner:latest
-    env_file: .env
+    expose:
+      - 8080
+    environment:
+      - AMQP_USER=guest
+      - AMQP_PASS=guest
+      - AMQP_HOST=broker
+      - AMQP_PORT=5672
+      - GRPC_HOST=weather
+      - GRPC_PORT=8080
+      - TOPO_PORT=8080
+      - TOPO_HOST=topo
     depends_on:
       - broker
       - weather
       - topo
   server:
     image: cristoflop/server:latest
-    env_file: .env
     ports:
       - 8080:3000
+    environment:
+      - AMQP_USER=guest
+      - AMQP_PASS=guest
+      - AMQP_HOST=broker
+      - AMQP_PORT=5672
+      - DB_NAME=eoloplants
+      - DB_USER=root
+      - DB_PORT=3306
+      - DB_PASS=root
+      - DB_HOST=sqldb
+    labels:
+      kompose.service.type: nodeport
     depends_on:
       - broker
-      - sql_db
-    command: ["./wait-for-it.sh", "-t", "0", "sql_db:3306", "--", "./wait-for-it.sh", "-t", "0", "broker:5672", "--", "node", "src/server.js"]
+      - sqldb
+    command: ["./wait-for-it.sh", "-t", "0", "sqldb:3306", "--", "./wait-for-it.sh", "-t", "0", "broker:5672", "--", "node", "src/server.js"]
   topo:
     image: cristoflop/toposervice:latest
-    env_file: .env
     expose:
       - 8080
+    environment:
+      - SERVER_PORT=8080
+      - NOSQL_DB_HOST=nosqldb
+      - NOSQL_DB_PORT=27017
+      - NOSQL_DB_NAME=topodb
+      - NOSQL_DB_USER=root
+      - NOSQL_DB_PASS=root
     depends_on:
-      - nosql_db
+      - nosqldb
   weather:
     image: cristoflop/weatherservice:latest
-    env_file: .env
     expose:
       - 8080
-  sql_db:
+    environment:
+      - GRPC_HOST=0.0.0.0
+      - GRPC_PORT=8080
+  sqldb:
     image: mysql:8.0.23
-    env_file: .env
+    environment:
+      - MYSQL_DATABASE=eoloplants
+      - MYSQL_ROOT_PASSWORD=root
     expose:
       - 3306
-    volumes:
-      - ./mysql:/var/lib/mysql
-  nosql_db:
+  nosqldb:
     image: mongo:4.2.12-bionic
-    env_file: .env
+    environment:
+      - MONGO_INITDB_DATABASE=topodb
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
     expose:
       - 27017
-    volumes:
-      - ./mongo:/data/db
   broker:
     image: rabbitmq:3.8.14-alpine
-    env_file: .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
     expose:
       - 5672
-    volumes:
-      - ./broker:/var/lib/rabbitmq
