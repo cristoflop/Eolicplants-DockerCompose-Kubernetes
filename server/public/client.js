@@ -1,4 +1,11 @@
-let socket = new WebSocket("wss://" + window.location.host + "/eoloplants");
+let socket;
+try {
+  socket = new WebSocket("ws://" + window.location.host + "/eoloplants");
+}
+catch (e) {
+  socket = new WebSocket("wss://" + window.location.host + "/eoloplants");
+}
+
 let userKey;
 
 socket.onmessage = function (event) {
