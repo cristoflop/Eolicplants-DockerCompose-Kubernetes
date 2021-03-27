@@ -6,10 +6,11 @@ const server = new grpc.Server();
 
 server.addService(WeatherService.service, weatherServiceImpl);
 
+const GRPC_HOST = process.env.GRPC_HOST || '0.0.0.0';
 const GRPC_PORT = process.env.GRPC_PORT || 9090;
 
-server.bind(`0.0.0.0:${GRPC_PORT}`, grpc.ServerCredentials.createInsecure());
+server.bind(`${GRPC_HOST}:${GRPC_PORT}`, grpc.ServerCredentials.createInsecure());
 
-console.log(`gRPC server running at 0.0.0.0:${GRPC_PORT}`);
+console.log(`gRPC server running at ${GRPC_HOST}:${GRPC_PORT}`);
 
 server.start();
