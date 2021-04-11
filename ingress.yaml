@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: eoloplants-ingress
+  annotations:
+    dev.okteto.com/generate-host: "true"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            backend:
+              serviceName: server
+              servicePort: 8080
+          - path: /toposervice
+            backend:
+              serviceName: topo
+              servicePort: 8080
