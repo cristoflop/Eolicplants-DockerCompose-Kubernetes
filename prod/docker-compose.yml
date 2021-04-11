@@ -31,8 +31,6 @@ services:
       - DB_PORT=3306
       - DB_PASS=root
       - DB_HOST=sqldb
-    labels:
-      kompose.service.type: nodeport
     depends_on:
       - broker
       - sqldb

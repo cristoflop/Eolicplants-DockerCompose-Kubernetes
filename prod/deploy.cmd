@@ -2,6 +2,7 @@
 
 kubectl delete --all services
 kubectl delete --all deployments
+kubectl delete -f ingress.yaml
 
 kubectl apply -f broker-deployment.yaml
 kubectl apply -f sqldb-deployment.yaml
@@ -19,5 +20,4 @@ kubectl apply -f weather-service.yaml
 kubectl apply -f planner-service.yaml
 kubectl apply -f server-service.yaml
 
-kubectl delete -f ingress.yaml
 kubectl apply -f ingress.yaml
