@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: nosqldb
+  name: nosqldb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nosqldb
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: nosqldb
+    spec:
+      containers:
+      - env:
+        - name: MONGO_INITDB_DATABASE
+          value: topodb
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: root
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: root
+        image: mongo:4.2.12-bionic
+        imagePullPolicy: ""
+        name: nosqldb
+        volumeMounts:
+          - mountPath: /db/mongo
+            name: nosqldb
+        ports:
+        - containerPort: 27017
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+        - name: nosqldb
+          persistentVolumeClaim:
+            claimName: nosql-pvc-sc
+status: {}
