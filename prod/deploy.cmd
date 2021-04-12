@@ -1,8 +1,6 @@
 :: PRIMERO ES NECESARIO TENER CONFIGURADO EL OKTETO-CONFIG PARA QUE SE PUBLIQUEN LOS SERVICIOS EN LA WEB DE OKTETO CLOUD
 
-kubectl delete --all services
-kubectl delete --all deployments
-kubectl delete -f ingress.yaml
+kubectl delete all --all
 
 kubectl apply -f broker-deployment.yaml
 kubectl apply -f sqldb-deployment.yaml
@@ -21,3 +19,6 @@ kubectl apply -f planner-service.yaml
 kubectl apply -f server-service.yaml
 
 kubectl apply -f ingress.yaml
+
+kubectl apply -f sql-pvc-sc.yaml
+kubectl apply -f nosql-pvc-sc.yaml
