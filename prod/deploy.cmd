@@ -20,7 +20,14 @@ kubectl apply -f server-service.yaml
 
 kubectl apply -f ingress/ingress.yaml
 
-:: kubectl apply -f persistentVolumes/sql-pvc-sc.yaml
-:: kubectl apply -f nosql-pvc-sc.yaml
+kubectl apply -f persistentVolumes/sql-pvc-sc.yaml
+kubectl apply -f nosql-pvc-sc.yaml
 
 kubectl apply -f networkPolicies/np-deny-all.yaml
+kubectl apply -f networkPolicies/allow-server-ingress.yaml
+kubectl apply -f networkPolicies/allow-server-mysql.yaml
+kubectl apply -f networkPolicies/allow-server-broker.yaml
+kubectl apply -f networkPolicies/allow-planner-broker.yaml
+kubectl apply -f networkPolicies/allow-planner-topo.yaml
+kubectl apply -f networkPolicies/allow-planner-weather.yaml
+kubectl apply -f networkPolicies/allow-topo-mongo.yaml
