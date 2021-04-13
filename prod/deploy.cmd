@@ -21,7 +21,7 @@ kubectl apply -f server-service.yaml
 kubectl apply -f ingress/ingress.yaml
 
 kubectl apply -f persistentVolumes/sql-pvc-sc.yaml
-kubectl apply -f nosql-pvc-sc.yaml
+kubectl apply -f persistentVolumes/nosql-pvc-sc.yaml
 
 kubectl apply -f networkPolicies/np-deny-all.yaml
 kubectl apply -f networkPolicies/allow-server-ingress.yaml
