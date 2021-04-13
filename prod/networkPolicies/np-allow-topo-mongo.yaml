@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-planner-topo
+spec:
+  podSelector:
+    matchLabels:
+      app: nosqldb
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: topo
+      ports:
+        - protocol: TCP
+          port: 27017

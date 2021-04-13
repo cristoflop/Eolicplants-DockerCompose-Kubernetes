@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-planner-broker
+spec:
+  podSelector:
+    matchLabels:
+      app: broker
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: planner
+      ports:
+        - protocol: TCP
+          port: 5672
