@@ -18,7 +18,9 @@ kubectl apply -f weather-service.yaml
 kubectl apply -f planner-service.yaml
 kubectl apply -f server-service.yaml
 
-kubectl apply -f ingress.yaml
+kubectl apply -f ingress/ingress.yaml
 
-kubectl apply -f sql-pvc-sc.yaml
-kubectl apply -f nosql-pvc-sc.yaml
+:: kubectl apply -f persistentVolumes/sql-pvc-sc.yaml
+:: kubectl apply -f nosql-pvc-sc.yaml
+
+kubectl apply -f networkPolicies/np-deny-all.yaml
