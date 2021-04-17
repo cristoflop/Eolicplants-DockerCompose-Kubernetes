@@ -1,7 +1,7 @@
 version: "3.0"
 services:
   planner:
-    image: cristoflop/planner:latest
+    image: cloudappsteam/planner:1.0
     expose:
       - 8080
     environment:
@@ -18,7 +18,7 @@ services:
       - weather
       - topo
   server:
-    image: cristoflop/server:latest
+    image: cloudappsteam/server:1.0
     ports:
       - 8080:3000
     environment:
@@ -36,7 +36,7 @@ services:
       - sqldb
     command: ["./wait-for-it.sh", "-t", "0", "sqldb:3306", "--", "./wait-for-it.sh", "-t", "0", "broker:5672", "--", "node", "src/server.js"]
   topo:
-    image: cristoflop/toposervice:latest
+    image: cloudappsteam/toposervice:1.0
     expose:
       - 8080
     environment:
@@ -49,7 +49,7 @@ services:
     depends_on:
       - nosqldb
   weather:
-    image: cristoflop/weatherservice:latest
+    image: cloudappsteam/weatherservice:1.0
     expose:
       - 8080
     environment:

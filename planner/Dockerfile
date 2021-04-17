@@ -10,3 +10,4 @@ WORKDIR /usr/src/app/
 COPY --from=builder /project/target/*.jar /usr/src/app/server.jar
 EXPOSE 8080
 CMD [ "java", "-jar", "server.jar" ]
+

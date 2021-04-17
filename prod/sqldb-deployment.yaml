@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   annotations:
     kompose.cmd: kompose convert
-    kompose.version: 1.21.0 (992df58d8)
+    kompose.version: 1.22.0 (HEAD)
   creationTimestamp: null
   labels:
     io.kompose.service: sqldb
@@ -18,30 +18,21 @@ spec:
     metadata:
       annotations:
         kompose.cmd: kompose convert
-        kompose.version: 1.21.0 (992df58d8)
+        kompose.version: 1.22.0 (HEAD)
       creationTimestamp: null
       labels:
         io.kompose.service: sqldb
     spec:
       containers:
-      - env:
-        - name: MYSQL_DATABASE
-          value: eoloplants
-        - name: MYSQL_ROOT_PASSWORD
-          value: root
-        image: mysql:8.0.23
-        imagePullPolicy: ""
-        name: sqldb
-        volumeMounts:
-          - mountPath: /db/mysql
-            name: sqldb
-        ports:
-        - containerPort: 3306
-        resources: {}
+        - env:
+            - name: MYSQL_DATABASE
+              value: eoloplants
+            - name: MYSQL_ROOT_PASSWORD
+              value: root
+          image: mysql:8.0.23
+          name: sqldb
+          ports:
+            - containerPort: 3306
+          resources: {}
       restartPolicy: Always
-      serviceAccountName: ""
-      volumes:
-        - name: sqldb
-          persistentVolumeClaim:
-            claimName: sql-pvc-sc
 status: {}

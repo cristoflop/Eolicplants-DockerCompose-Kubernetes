@@ -7,7 +7,8 @@ metadata:
     dev.okteto.com/generate-host: "true"
 spec:
   rules:
-    - http:
+    - host: kubernetes.docker.internal
+      http:
         paths:
           - path: /(.*)
             backend:
