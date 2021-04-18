@@ -1,0 +1,135 @@
+# Default values for eolicplants.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+images:
+  - repository: cloudappsteam/weatherservice
+    tag: "1.0"
+    name: weatherservice
+    pullPolicy: IfNotPresent
+
+  - repository: cloudappsteam/planner
+    tag: "1.0"
+    pullPolicy: IfNotPresent
+    name: planner
+
+  - repository: cloudappsteam/server
+    tag: "1.0"
+    name: server
+    useIngress: true
+    pullPolicy: IfNotPresent
+
+  - repository: cloudappsteam/toposervice
+    name: toposervice
+    tag: "1.0"
+    pullPolicy: IfNotPresent
+    useIngress: true
+
+  - name: broker
+    port: 5672
+    repository: rabbitmq
+    tag: "3.8.14-alpine"
+
+  - name: nosqldb
+    port: 27017
+    repository: mongo
+    tag: "4.2.12-bionic"
+    volumePath: /db/nosql
+    storageClassName: ""
+
+  - name: sqldb
+    port: 3306
+    repository: mysql
+    tag: "8.0.23"
+    volumePath: /db/sqldb
+    storageClassName: ""
+
+volumes:
+  broker:
+    port: 8080
+    useIngress: false
+  nosqldb:
+    port: 8080
+    useIngress: true
+  sqldb:
+    port: 8080
+    useIngress: true
+
+imagePullSecrets: [ ]
+nameOverride: ""
+fullnameOverride: ""
+createPersistenceVolumes: false
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: { }
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: { }
+
+podSecurityContext: { }
+# fsGroup: 2000
+
+securityContext: { }
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+# runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    dev.okteto.com/generate-host: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /(.*)
+          backend:
+            serviceName: server
+            servicePort: 8080
+        - path: /toposervice/(.*)
+          backend:
+            serviceName: topo
+            servicePort: 8080
+  tls: [ ]
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: { }
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+#   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity: { }
