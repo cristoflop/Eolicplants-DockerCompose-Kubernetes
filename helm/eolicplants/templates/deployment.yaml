@@ -35,9 +35,9 @@ spec:
           {{- toYaml $.Values.securityContext | nindent 12 }}
           image: "{{ .repository }}:{{ .tag | default $.Chart.AppVersion }}"
           imagePullPolicy: {{ .pullPolicy }}
-          {{- if .volumePath }}
           volumeMounts:
-            - mountPath: {{ .volumePath }}
+            {{- range .volumes }}
+            - mountPath: {{ .path }}
               name: {{ .name }}
           {{- end }}
           ports:
@@ -65,6 +65,12 @@ spec:
       {{- with $.Values.tolerations }}
       tolerations:
       {{- toYaml $ | nindent 8 }}
+      volumes:
+        {{- range .volumes }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ .name }}
+        {{- end }}
   {{- end }}
 ---
   {{- end }}

@@ -63,38 +63,102 @@ images:
     env:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    volumeName: "broker-pvc-sc"
 
   - name: nosqldb
     port: 27017
     repository: mongo
     tag: "4.2.12-bionic"
-    volumePath: /db/nosql
-    storageClassName: ""
     env:
       MONGO_INITDB_DATABASE: topodb
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - path: /db/nosql
+        name: "nosql-pvc-sc"
 
   - name: sqldb
     port: 3306
     repository: mysql
     tag: "8.0.23"
-    volumePath: /db/sqldb
-    storageClassName: ""
     env:
       MYSQL_DATABASE: eoloplants
       MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - path: /db/sqldb
+        name: "sqldb-pvc-sc"
 
 volumes:
-  broker:
-    port: 8080
-    useIngress: false
-  nosqldb:
-    port: 8080
-    useIngress: true
-  sqldb:
-    port: 8080
-    useIngress: true
+  enabled: true
+  items:
+    broker:
+      accessModes:
+        - ReadWriteOnce
+      size: 1Gi
+    nosqldb:
+      accessModes:
+        - ReadWriteOnce
+      size: 1Gi
+    sqldb:
+      accessModes:
+        - ReadWriteOnce
+      size: 1Gi
+
+networkPolicies:
+  enabled: true
+  items:
+    broker:
+      app: broker
+      allowTraffic:
+        from:
+          - planner
+          - server
+      ports:
+        - 5672
+    nosqldb:
+      app: nosqldb
+      allowTraffic:
+        from:
+          - topo
+      ports:
+        - 27017
+    sqldb:
+      app: sqldb
+      allowTraffic:
+        from:
+          - server
+      ports:
+        - 3306
+    topo:
+      app: topo
+      allowTraffic:
+        from:
+          - planner
+      ports:
+        - 8080
+    planner:
+      app: planner
+      allowTraffic:
+        to:
+          - broker
+          - weather
+          - topo
+      ports:
+        - 8080
+    weather:
+      app: weather
+      allowTraffic:
+        from:
+          - planner
+      ports:
+        - 8080
+    deny:
+      allowTraffic:
+      policyTypes:
+        - Ingress
+        - Egress
+    ingress:
+      allowTraffic:
 
 imagePullSecrets: [ ]
 nameOverride: ""
@@ -120,7 +184,7 @@ securityContext: { }
   #   drop:
   #   - ALL
   # readOnlyRootFilesystem: true
-# runAsNonRoot: true
+  # runAsNonRoot: true
 # runAsUser: 1000
 
 service:
@@ -157,7 +221,7 @@ resources: { }
   #   cpu: 100m
   #   memory: 128Mi
   # requests:
-#   cpu: 100m
+  #   cpu: 100m
 #   memory: 128Mi
 
 autoscaling:

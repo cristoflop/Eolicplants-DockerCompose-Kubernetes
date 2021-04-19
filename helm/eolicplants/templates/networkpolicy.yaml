@@ -1,0 +1,53 @@
+{{- if .Values.networkPolicies.enabled }}
+  {{- range $key, $value := .Values.networkPolicies.items }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $key }}-ingress
+spec:
+  podSelector:
+    {{- if $value.app }}
+    matchLabels:
+      app: {{ $value.app }}
+  {{- else -}}
+  {{ "{}" | indent 1 }}
+  {{- end }}
+  ingress:
+    - from:
+        {{- if $value.allowTraffic }}
+        {{- range $value.allowTraffic.from }}
+        - podSelector:
+            matchLabels:
+              app: {{ . }}
+      {{- end }}
+      {{- else -}}
+      {{ "[]" | indent 1 }}
+      {{- end }}
+      ports:
+        {{- range $value.ports }}
+        - protocol: TCP
+          port: {{ . }}
+  {{- end }}
+  egress:
+    - to:
+        {{- if $value.allowTraffic }}
+        {{- range $value.allowTraffic.to }}
+        - podSelector:
+            matchLabels:
+              app: {{ . }}
+      {{- end }}
+      {{- else -}}
+      {{ "[]" | indent 1 }}
+      {{- end }}
+      ports:
+        {{- range $value.ports }}
+        - protocol: TCP
+          port: {{ . }}
+  {{- end }}
+  policyTypes:
+    {{- range $value.policyTypes }}
+    - {{ . }}
+  {{- end }}
+---
+{{- end }}
+{{- end }}

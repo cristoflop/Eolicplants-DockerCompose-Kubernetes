@@ -11,6 +11,9 @@ spec:
         - podSelector:
             matchLabels:
               app: planner
+        - podSelector:
+            matchLabels:
+              app: server
       ports:
         - protocol: TCP
           port: 5672
