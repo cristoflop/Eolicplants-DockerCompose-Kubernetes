@@ -9,28 +9,60 @@ images:
     tag: "1.0"
     name: weatherservice
     pullPolicy: IfNotPresent
+    env:
+      GRPC_HOST: 0.0.0.0
+      GRPC_PORT: 8080
 
   - repository: cloudappsteam/planner
     tag: "1.0"
     pullPolicy: IfNotPresent
     name: planner
+    env:
+      AMQP_USER: guest
+      AMQP_PASS: guest
+      AMQP_HOST: broker
+      AMQP_PORT: 5672
+      GRPC_HOST: weather
+      GRPC_PORT: 8080
+      TOPO_PORT: 8080
+      TOPO_HOST: topo
 
   - repository: cloudappsteam/server
     tag: "1.0"
     name: server
     useIngress: true
     pullPolicy: IfNotPresent
+    env:
+      AMQP_USER: guest
+      AMQP_PASS: guest
+      AMQP_HOST: broker
+      AMQP_PORT: 5672
+      DB_NAME: eoloplants
+      DB_USER: root
+      DB_PORT: 3306
+      DB_PASS: root
+      DB_HOST: sqldb
 
   - repository: cloudappsteam/toposervice
     name: toposervice
     tag: "1.0"
     pullPolicy: IfNotPresent
     useIngress: true
+    env:
+      SERVER_PORT: 8080
+      NOSQL_DB_HOST: nosqldb
+      NOSQL_DB_PORT: 27017
+      NOSQL_DB_NAME: topodb
+      NOSQL_DB_USER: root
+      NOSQL_DB_PASS: root
 
   - name: broker
     port: 5672
     repository: rabbitmq
     tag: "3.8.14-alpine"
+    env:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
 
   - name: nosqldb
     port: 27017
@@ -38,6 +70,10 @@ images:
     tag: "4.2.12-bionic"
     volumePath: /db/nosql
     storageClassName: ""
+    env:
+      MONGO_INITDB_DATABASE: topodb
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
 
   - name: sqldb
     port: 3306
@@ -45,6 +81,9 @@ images:
     tag: "8.0.23"
     volumePath: /db/sqldb
     storageClassName: ""
+    env:
+      MYSQL_DATABASE: eoloplants
+      MYSQL_ROOT_PASSWORD: root
 
 volumes:
   broker:
@@ -81,7 +120,7 @@ securityContext: { }
   #   drop:
   #   - ALL
   # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
+# runAsNonRoot: true
 # runAsUser: 1000
 
 service:
@@ -118,7 +157,7 @@ resources: { }
   #   cpu: 100m
   #   memory: 128Mi
   # requests:
-  #   cpu: 100m
+#   cpu: 100m
 #   memory: 128Mi
 
 autoscaling:
