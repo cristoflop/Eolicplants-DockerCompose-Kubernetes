@@ -33,6 +33,11 @@ spec:
         - name: {{ $.Chart.Name }}
           securityContext:
           {{- toYaml $.Values.securityContext | nindent 12 }}
+          env:
+            {{- range $key, $value := .env}}
+            - name: {{ $key }}
+              value: {{ . }}
+          {{- end }}
           image: "{{ .repository }}:{{ .tag | default $.Chart.AppVersion }}"
           imagePullPolicy: {{ .pullPolicy }}
           volumeMounts:
@@ -70,7 +75,7 @@ spec:
         - name: {{ .name }}
           persistentVolumeClaim:
             claimName: {{ .name }}
-        {{- end }}
+  {{- end }}
   {{- end }}
 ---
   {{- end }}
