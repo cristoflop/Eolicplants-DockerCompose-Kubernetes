@@ -75,7 +75,7 @@ images:
       MONGO_INITDB_ROOT_PASSWORD: root
     volumes:
       - path: /db/nosql
-        name: "nosql-pvc-sc"
+        name: "nosqldb-pvc-sc"
 
   - name: sqldb
     port: 3306
@@ -113,29 +113,29 @@ networkPolicies:
         from:
           - planner
           - server
-      ports:
-        - 5672
+        ports:
+          - 5672
     nosqldb:
       app: nosqldb
       allowTraffic:
         from:
           - topo
-      ports:
-        - 27017
+        ports:
+          - 27017
     sqldb:
       app: sqldb
       allowTraffic:
         from:
           - server
-      ports:
-        - 3306
+        ports:
+          - 3306
     topo:
       app: topo
       allowTraffic:
         from:
           - planner
-      ports:
-        - 8080
+        ports:
+          - 8080
     planner:
       app: planner
       allowTraffic:
@@ -143,15 +143,15 @@ networkPolicies:
           - broker
           - weather
           - topo
-      ports:
-        - 8080
+        ports:
+          - 8080
     weather:
       app: weather
       allowTraffic:
         from:
           - planner
-      ports:
-        - 8080
+        ports:
+          - 8080
     deny:
       allowTraffic:
       policyTypes:

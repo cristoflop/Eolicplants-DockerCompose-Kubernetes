@@ -20,14 +20,14 @@ spec:
             matchLabels:
               app: {{ . }}
       {{- end }}
-      {{- else -}}
-      {{ "[]" | indent 1 }}
-      {{- end }}
       ports:
         {{- range $value.ports }}
         - protocol: TCP
           port: {{ . }}
-  {{- end }}
+      {{- end }}
+      {{- else -}}
+      {{ "[]" | indent 1 }}
+      {{- end }}
   egress:
     - to:
         {{- if $value.allowTraffic }}
@@ -36,13 +36,13 @@ spec:
             matchLabels:
               app: {{ . }}
       {{- end }}
-      {{- else -}}
-      {{ "[]" | indent 1 }}
-      {{- end }}
       ports:
         {{- range $value.ports }}
         - protocol: TCP
           port: {{ . }}
+      {{- else -}}
+      {{ "[]" | indent 1 }}
+      {{- end }}
   {{- end }}
   policyTypes:
     {{- range $value.policyTypes }}
