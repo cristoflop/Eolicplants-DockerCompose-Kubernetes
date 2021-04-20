@@ -21,7 +21,7 @@ spec:
               app: {{ . }}
       {{- end }}
       ports:
-        {{- range $value.ports }}
+        {{- range $value.allowTraffic.ports }}
         - protocol: TCP
           port: {{ . }}
       {{- end }}

@@ -6,6 +6,7 @@ replicaCount: 1
 
 images:
   - repository: cloudappsteam/weatherservice
+    port: 8080
     tag: "1.0"
     name: weatherservice
     pullPolicy: IfNotPresent
@@ -14,6 +15,7 @@ images:
       GRPC_PORT: 8080
 
   - repository: cloudappsteam/planner
+    port: 8080
     tag: "1.0"
     pullPolicy: IfNotPresent
     name: planner
@@ -28,6 +30,7 @@ images:
       TOPO_HOST: topo
 
   - repository: cloudappsteam/server
+    port: 8080
     tag: "1.0"
     name: server
     useIngress: true
@@ -44,6 +47,7 @@ images:
       DB_HOST: sqldb
 
   - repository: cloudappsteam/toposervice
+    port: 8080
     name: toposervice
     tag: "1.0"
     pullPolicy: IfNotPresent

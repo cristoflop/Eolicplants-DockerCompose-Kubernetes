@@ -1,8 +1,8 @@
-{{- range $service, $params := .Values.services }}
+{{- range $service, $params := .Values.images }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "eolicplants.fullname" $ }}-{{ $service }}
+  name: {{ include "eolicplants.fullname" $ }}-{{ $params.name }}
   labels:
     {{- include "eolicplants.labels" $ | nindent 4 }}
     release: {{ $.Release.Name }}
