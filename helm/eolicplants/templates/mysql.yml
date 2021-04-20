@@ -62,7 +62,7 @@ spec:
     protocol: TCP
     name: mysql-port
   selector:
-    app: mysql
+    app: mysql-{{ .Release.Name }}
   type: ClusterIP
 ---
 {{- if .Values.config.enableNetworkPolicies }}

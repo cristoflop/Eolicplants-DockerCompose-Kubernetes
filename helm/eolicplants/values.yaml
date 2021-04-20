@@ -4,165 +4,112 @@
 
 replicaCount: 1
 
-images:
-  - repository: cloudappsteam/weatherservice
-    port: 8080
-    tag: "1.0"
-    name: weatherservice
-    pullPolicy: IfNotPresent
-    env:
-      GRPC_HOST: 0.0.0.0
-      GRPC_PORT: 8080
+egress:
+  ports:
+    - port: 53
+      protocol: TCP
+    - port: 53
+      protocol: UDP
 
-  - repository: cloudappsteam/planner
-    port: 8080
-    tag: "1.0"
-    pullPolicy: IfNotPresent
-    name: planner
-    env:
-      AMQP_USER: guest
-      AMQP_PASS: guest
-      AMQP_HOST: broker
-      AMQP_PORT: 5672
-      GRPC_HOST: weather
-      GRPC_PORT: 8080
-      TOPO_PORT: 8080
-      TOPO_HOST: topo
+ingress:
+  enabled: false
+  host: mastercloudapps.host
 
-  - repository: cloudappsteam/server
-    port: 8080
-    tag: "1.0"
-    name: server
-    useIngress: true
-    pullPolicy: IfNotPresent
-    env:
-      AMQP_USER: guest
-      AMQP_PASS: guest
-      AMQP_HOST: broker
-      AMQP_PORT: 5672
-      DB_NAME: eoloplants
-      DB_USER: root
-      DB_PORT: 3306
-      DB_PASS: root
-      DB_HOST: sqldb
+config:
+  createPersistenceVolumes: true
+  enableNetworkPolicies: true
 
-  - repository: cloudappsteam/toposervice
-    port: 8080
-    name: toposervice
-    tag: "1.0"
-    pullPolicy: IfNotPresent
-    useIngress: true
-    env:
-      SERVER_PORT: 8080
-      NOSQL_DB_HOST: nosqldb
-      NOSQL_DB_PORT: 27017
-      NOSQL_DB_NAME: topodb
-      NOSQL_DB_USER: root
-      NOSQL_DB_PASS: root
+mongodb:
+  image: mongo
+  tag: 4.2.12-bionic
+  env:
+    - name: MONGO_INITDB_DATABASE
+      value: topoDB
+    - name: MONGO_INITDB_ROOT_USERNAME
+      value: root
+    - name: MONGO_INITDB_ROOT_PASSWORD
+      value: password
+  storageClassName: mongodb
 
-  - name: broker
-    port: 5672
-    repository: rabbitmq
-    tag: "3.8.14-alpine"
-    env:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    volumeName: "broker-pvc-sc"
+mysqldb:
+  image: mysql
+  tag: 8.0.22
+  env:
+    - name: MYSQL_ROOT_PASSWORD
+      value: password
+    - name: MYSQL_DATABASE
+      value: eoloplantsDB
+  storageClassName: sqldb
 
-  - name: nosqldb
-    port: 27017
-    repository: mongo
-    tag: "4.2.12-bionic"
-    env:
-      MONGO_INITDB_DATABASE: topodb
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
-    volumes:
-      - path: /db/nosql
-        name: "nosqldb-pvc-sc"
+rabbitmq:
+  name: rabbitmq
+  tag: 3-management
+  env:
+    - name: RABBITMQ_DEFAULT_USER
+      value: root
+    - name: RABBITMQ_DEFAULT_PASS
+      value: password
+  storageClassName: rabbitmq
 
-  - name: sqldb
-    port: 3306
-    repository: mysql
-    tag: "8.0.23"
-    env:
-      MYSQL_DATABASE: eoloplants
-      MYSQL_ROOT_PASSWORD: root
-    volumes:
-      - path: /db/sqldb
-        name: "sqldb-pvc-sc"
+planner:
+  image: oscarsotosanchez/planner
+  tag: v1.0
+  env:
+    - name: TOPO_HOST
+      value: toposervice-service
+    - name: TOPO_PORT
+      value: "8080"
+    - name: GRPC_CLIENT_WEATHERSERVER_ADDRESS
+      value: static://weatherservice-service:9090
+    - name: SPRING_RABBITMQ_HOST
+      value: rabbitmq-service
+    - name: SPRING_RABBITMQ_PORT
+      value: "5672"
+    - name: SPRING_RABBITMQ_USERNAME
+      value: root
+    - name: SPRING_RABBITMQ_PASSWORD
+      value: password
 
-volumes:
-  enabled: true
-  items:
-    broker:
-      accessModes:
-        - ReadWriteOnce
-      size: 1Gi
-    nosqldb:
-      accessModes:
-        - ReadWriteOnce
-      size: 1Gi
-    sqldb:
-      accessModes:
-        - ReadWriteOnce
-      size: 1Gi
+server:
+  image: oscarsotosanchez/server
+  tag: v1.0
+  serviceType: NodePort
+  env:
+    - name: MYSQL_HOST
+      value: mysql-service
+    - name: MYSQL_DB
+      value: eoloplantsDB
+    - name: MYSQL_USER
+      value: root
+    - name: MYSQL_PASS
+      value: password
+    - name: RABBITMQ_URL
+      value: amqp://root:password@rabbitmq-service
 
-networkPolicies:
-  enabled: true
-  items:
-    broker:
-      app: broker
-      allowTraffic:
-        from:
-          - planner
-          - server
-        ports:
-          - 5672
-    nosqldb:
-      app: nosqldb
-      allowTraffic:
-        from:
-          - topo
-        ports:
-          - 27017
-    sqldb:
-      app: sqldb
-      allowTraffic:
-        from:
-          - server
-        ports:
-          - 3306
-    topo:
-      app: topo
-      allowTraffic:
-        from:
-          - planner
-        ports:
-          - 8080
-    planner:
-      app: planner
-      allowTraffic:
-        to:
-          - broker
-          - weather
-          - topo
-        ports:
-          - 8080
-    weather:
-      app: weather
-      allowTraffic:
-        from:
-          - planner
-        ports:
-          - 8080
-    deny:
-      allowTraffic:
-      policyTypes:
-        - Ingress
-        - Egress
-    ingress:
-      allowTraffic:
+toposervice:
+  image: oscarsotosanchez/toposervice
+  tag: v1.0
+  serviceType: NodePort
+  env:
+    - name: SPRING_DATA_MONGODB_HOST
+      value: mongodb-service
+    - name: SPRING_DATA_MONGODB_PORT
+      value: "27017"
+    - name: SPRING_DATA_MONGODB_DATABASE
+      value: topoDB
+    - name: SPRING_DATA_MONGODB_AUTHENTICATION-DATABASE
+      value: admin
+    - name: SPRING_DATA_MONGODB_USERNAME
+      value: root
+    - name: SPRING_DATA_MONGODB_PASSWORD
+      value: password
+
+weatherservice:
+  image: oscarsotosanchez/weatherservice
+  tag: v1.0
+  env:
+    - name: GRPC_PORT
+      value: "9090"
 
 imagePullSecrets: [ ]
 nameOverride: ""
@@ -195,22 +142,7 @@ service:
   type: ClusterIP
   port: 80
 
-ingress:
-  enabled: false
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-    dev.okteto.com/generate-host: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /(.*)
-          backend:
-            serviceName: server
-            servicePort: 8080
-        - path: /toposervice/(.*)
-          backend:
-            serviceName: topo
-            servicePort: 8080
+
   tls: [ ]
   #  - secretName: chart-example-tls
   #    hosts:
