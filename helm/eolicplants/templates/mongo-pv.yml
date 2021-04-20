@@ -1,12 +1,15 @@
+{{- if .Values.config.createPersistenceVolumes }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: mongo-pv
+  name: mongo-pv-{{ .Release.Name }}
 spec:
-  storageClassName: mongo
+  storageClassName: mongo-{{ .Release.Name }}
   accessModes:
     - ReadWriteOnce
   capacity:
     storage: 1Gi
   hostPath:
     path: /db/mongo
+---
+{{- end }}

@@ -2,27 +2,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql-deploy
+  name: mysql-deploy-{{ .Release.Name }}
 spec:
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: mysql
+      app: mysql-{{ .Release.Name }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: mysql
+        app: mysql-{{ .Release.Name }}
     spec:
       containers:
-      - name: mysql
-        image: mysql:8.0.22
+      - name: mysql-{{ .Release.Name }}
+        image: {{ .Values.mysqldb.image }}:{{ .Values.mysqldb.tag }}
         env:
-        - name: MYSQL_ROOT_PASSWORD
-          value: password
-        - name: MYSQL_DATABASE
-          value: eoloplantsDB
+        {{- range .Values.mysqldb.env }}
+          - name: {{ .name }}
+            value: "{{ .value }}"
+        {{- end }}
         ports:
         - containerPort: 3306
         volumeMounts:
@@ -31,14 +31,18 @@ spec:
       volumes:
       - name: datadb
         persistentVolumeClaim:
-          claimName: mysql-pvc
+          claimName: mysql-pvc-{{ .Release.Name }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mysql-pvc
+  name: mysql-pvc-{{ .Release.Name }}
 spec:
-  storageClassName: mysql
+  {{- if .Values.config.createPersistenceVolumes }}
+  storageClassName: {{ "mysql" }}-{{ .Release.Name }}
+  {{ else }}
+  storageClassName: {{ .Values.mysqldb.storageClassName }}
+  {{- end }}
   accessModes:
   - ReadWriteOnce
   resources:
@@ -48,9 +52,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql-service
+  name: mysql-service-{{ .Release.Name }}
   labels:
-    app: mysql
+    app: mysql-{{ .Release.Name }}
 spec:
   ports:
   - port: 3306
@@ -61,19 +65,22 @@ spec:
     app: mysql
   type: ClusterIP
 ---
+{{- if .Values.config.enableNetworkPolicies }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: mysql-from-server
+  name: mysql-from-server-{{ .Release.Name }}
 spec:
   podSelector:
     matchLabels:
-      app: mysql
+      app: mysql-{{ .Release.Name }}
   ingress:
   - from:
     - podSelector:
         matchLabels:
-          app: server
+          app: server-{{ .Release.Name }}
     ports:
     - port: 3306
       protocol: TCP
+---
+{{- end }}

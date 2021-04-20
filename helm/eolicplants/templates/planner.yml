@@ -2,18 +2,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: planner-deploy
+  name: planner-deploy-{{ .Release.Name }}
 spec:
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: planner
+      app: planner-{{ .Release.Name }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: planner
+        app: planner-{{ .Release.Name }}
         dns-policy: enabled
     spec:
       securityContext:
@@ -21,50 +21,43 @@ spec:
       restartPolicy: Always
       containers:
       - name: planner
-        image: oscarsotosanchez/planner:v1.0
+        image: {{ .Values.planner.image }}:{{ .Values.planner.tag }}
         env:
-        - name: TOPO_HOST
-          value: toposervice-service
-        - name: TOPO_PORT
-          value: "8080"
-        - name: GRPC_CLIENT_WEATHERSERVER_ADDRESS
-          value: static://weatherservice-service:9090
-        - name: SPRING_RABBITMQ_HOST
-          value: rabbitmq-service
-        - name: SPRING_RABBITMQ_PORT
-          value: "5672"
-        - name: SPRING_RABBITMQ_USERNAME
-          value: root
-        - name: SPRING_RABBITMQ_PASSWORD
-          value: password
+        {{- range .Values.mysqldb.env }}
+          - name: {{ .name }}
+            value: "{{ .value }}"
+        {{- end }}
 ---
+{{- if .Values.config.enableNetworkPolicies }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: planner-to-rabbit-weather-topo
+  name: planner-to-rabbit-weather-topo-{{ .Release.Name }}
 spec:
   podSelector:
     matchLabels:
-      app: planner
+      app: planner-{{ .Release.Name }}
   egress:
   - to:
     - podSelector:
         matchLabels:
-          app: rabbitmq
+          app: rabbitmq-{{ .Release.Name }}
     ports:
     - port: 5672
       protocol: TCP
   - to:
     - podSelector:
         matchLabels:
-          app: weatherservice
+          app: weatherservice-{{ .Release.Name }}
     ports:
     - port: 9090
       protocol: TCP
   - to:
     - podSelector:
         matchLabels:
-          app: toposervice
+          app: toposervice-{{ .Release.Name }}
     ports:
     - port: 8080
       protocol: TCP
+{{- end }}
+---

@@ -2,27 +2,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rabbitmq-deploy
+  name: rabbitmq-deploy-{{ .Release.Name }}
 spec:
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: rabbitmq
+      app: rabbitmq-{{ .Release.Name }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: rabbitmq
+        app: rabbitmq-{{ .Release.Name }}
     spec:
       containers:
-      - name: rabbitmq
+      - name: rabbitmq-{{ .Release.Name }}
         image: rabbitmq:3-management
         env:
-        - name: RABBITMQ_DEFAULT_USER
-          value: root
-        - name: RABBITMQ_DEFAULT_PASS
-          value: password
+        {{- range .Values.rabbitmq.env }}
+          - name: {{ .name }}
+            value: "{{ .value }}"
+        {{- end }}
         ports:
         - containerPort: 5672
         - containerPort: 15672
@@ -32,14 +32,18 @@ spec:
       volumes:
       - name: datarabbit
         persistentVolumeClaim:
-          claimName: rabbit-pvc
+          claimName: rabbit-pvc-{{ .Release.Name }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: rabbit-pvc
+  name: rabbit-pvc-{{ .Release.Name }}
 spec:
-  storageClassName: rabbit
+  {{- if .Values.config.createPersistenceVolumes }}
+  storageClassName: {{ "rabbit" }}-{{ .Release.Name }}
+  {{ else }}
+  storageClassName: {{ .Values.rabbitmq.storageClassName }}
+  {{- end }}
   accessModes:
   - ReadWriteOnce
   resources:
@@ -49,9 +53,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: rabbitmq-service
+  name: rabbitmq-service-{{ .Release.Name }}
   labels:
-    app: rabbitmq
+    app: rabbitmq-{{ .Release.Name }}
 spec:
   ports:
   - port: 5672
@@ -63,25 +67,28 @@ spec:
     protocol: TCP
     name: rabbitmq-port-15672
   selector:
-    app: rabbitmq
+    app: rabbitmq-{{ .Release.Name }}
   type: ClusterIP
 ---
+{{- if .Values.config.enableNetworkPolicies }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: rabbitmq-from-planner-server
+  name: rabbitmq-from-planner-server-{{ .Release.Name }}
 spec:
   podSelector:
     matchLabels:
-      app: rabbitmq
+      app: rabbitmq-{{ .Release.Name }}
   ingress:
   - from:
     - podSelector:
         matchLabels:
-          app: planner
+          app: planner-{{ .Release.Name }}
     - podSelector:
         matchLabels:
-          app: server
+          app: server-{{ .Release.Name }}
     ports:
     - port: 5672
       protocol: TCP
+---
+{{- end }}
