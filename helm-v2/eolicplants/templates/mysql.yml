@@ -1,0 +1,86 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deploy-{{ .Release.Name }}
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mysql-{{ .Release.Name }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql-{{ .Release.Name }}
+    spec:
+      containers:
+        - name: mysql-{{ .Release.Name }}
+          image: {{ .Values.mysqldb.image }}:{{ .Values.mysqldb.tag }}
+          env:
+            {{- range .Values.mysqldb.env }}
+            - name: {{ .name }}
+              value: "{{ .value }}"
+          {{- end }}
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: datadb
+      volumes:
+        - name: datadb
+          persistentVolumeClaim:
+            claimName: mysql-pvc-{{ .Release.Name }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc-{{ .Release.Name }}
+spec:
+  {{- if .Values.config.createPersistenceVolumes }}
+  storageClassName: {{ "mysql" }}
+  {{ else }}
+  storageClassName: {{ .Values.mysqldb.storageClassName }}
+  {{- end }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service-{{ .Release.Name }}
+  labels:
+    app: mysql-{{ .Release.Name }}
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+      protocol: TCP
+      name: mysql-port
+  selector:
+    app: mysql-{{ .Release.Name }}
+  type: ClusterIP
+---
+  {{- if .Values.config.enableNetworkPolicies }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mysql-from-server-{{ .Release.Name }}
+spec:
+  podSelector:
+    matchLabels:
+      app: mysql-{{ .Release.Name }}
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: server-{{ .Release.Name }}
+      ports:
+        - port: 3306
+          protocol: TCP
+---
+  {{- end }}

@@ -1,0 +1,15 @@
+{{- if .Values.config.createPersistenceVolumes }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: rabbit-pv-{{ .Release.Name }}
+spec:
+  storageClassName: rabbit
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 1Gi
+  hostPath:
+    path: /db/rabbitmq
+---
+{{- end }}

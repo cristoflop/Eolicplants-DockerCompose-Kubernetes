@@ -1,0 +1,174 @@
+# Default values for eolicplants.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+egress:
+  ports:
+    - port: 53
+      protocol: TCP
+    - port: 53
+      protocol: UDP
+
+ingress:
+  enabled: true
+  host: mastercloudapps.host
+
+config:
+  createPersistenceVolumes: true
+  enableNetworkPolicies: true
+
+mongodb:
+  image: mongo
+  tag: 4.2.12-bionic
+  env:
+    - name: MONGO_INITDB_DATABASE
+      value: topoDB
+    - name: MONGO_INITDB_ROOT_USERNAME
+      value: root
+    - name: MONGO_INITDB_ROOT_PASSWORD
+      value: password
+  storageClassName: mongodb
+
+mysqldb:
+  image: mysql
+  tag: 8.0.22
+  env:
+    - name: MYSQL_ROOT_PASSWORD
+      value: password
+    - name: MYSQL_DATABASE
+      value: eoloplantsDB
+  storageClassName: sqldb
+
+rabbitmq:
+  name: rabbitmq
+  tag: 3-management
+  env:
+    - name: RABBITMQ_DEFAULT_USER
+      value: root
+    - name: RABBITMQ_DEFAULT_PASS
+      value: password
+  storageClassName: rabbitmq
+
+planner:
+  image: oscarsotosanchez/planner
+  tag: v1.0
+  env:
+    - name: TOPO_HOST
+      value: toposervice-service
+    - name: TOPO_PORT
+      value: "8080"
+    - name: GRPC_CLIENT_WEATHERSERVER_ADDRESS
+      value: static://weatherservice-service:9090
+    - name: SPRING_RABBITMQ_HOST
+      value: rabbitmq-service
+    - name: SPRING_RABBITMQ_PORT
+      value: "5672"
+    - name: SPRING_RABBITMQ_USERNAME
+      value: root
+    - name: SPRING_RABBITMQ_PASSWORD
+      value: password
+
+server:
+  image: oscarsotosanchez/server
+  tag: v1.0
+  serviceType: NodePort
+  env:
+    - name: MYSQL_HOST
+      value: mysql-service
+    - name: MYSQL_DB
+      value: eoloplantsDB
+    - name: MYSQL_USER
+      value: root
+    - name: MYSQL_PASS
+      value: password
+    - name: RABBITMQ_URL
+      value: amqp://root:password@rabbitmq-service
+
+toposervice:
+  image: oscarsotosanchez/toposervice
+  tag: v1.0
+  serviceType: NodePort
+  env:
+    - name: SPRING_DATA_MONGODB_HOST
+      value: mongodb-service
+    - name: SPRING_DATA_MONGODB_PORT
+      value: "27017"
+    - name: SPRING_DATA_MONGODB_DATABASE
+      value: topoDB
+    - name: SPRING_DATA_MONGODB_AUTHENTICATION-DATABASE
+      value: admin
+    - name: SPRING_DATA_MONGODB_USERNAME
+      value: root
+    - name: SPRING_DATA_MONGODB_PASSWORD
+      value: password
+
+weatherservice:
+  image: oscarsotosanchez/weatherservice
+  tag: v1.0
+  env:
+    - name: GRPC_PORT
+      value: "9090"
+
+imagePullSecrets: [ ]
+nameOverride: ""
+fullnameOverride: ""
+createPersistenceVolumes: false
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: { }
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: { }
+
+podSecurityContext: { }
+# fsGroup: 2000
+
+securityContext: { }
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+# runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+
+  tls: [ ]
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: { }
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+#   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity: { }

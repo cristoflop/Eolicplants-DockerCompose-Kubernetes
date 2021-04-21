@@ -1,0 +1,29 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: multi-ingress-{{ .Release.Name }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    dev.okteto.com/generate-host: "true"
+spec:
+  rules:
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+      - path: /(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: server-service
+            port:
+              name: server-port
+      - path: /toposervice/(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: toposervice-service
+            port:
+              name: topo-port
+---
+{{- end }}

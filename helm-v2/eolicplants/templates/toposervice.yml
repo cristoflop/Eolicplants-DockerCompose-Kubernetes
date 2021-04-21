@@ -1,0 +1,90 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: toposervice-deploy-{{ .Release.Name }}
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: toposervice-{{ .Release.Name }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: toposervice-{{ .Release.Name }}
+        dns-policy: enabled
+    spec:
+      securityContext:
+        runAsUser: 1001
+      restartPolicy: Always
+      containers:
+        - name: toposervice-{{ .Release.Name }}
+          image: {{ .Values.toposervice.image }}:{{ .Values.toposervice.tag }}
+          env:
+            {{- range .Values.mysqldb.env }}
+            - name: {{ .name }}
+              value: "{{ .value }}"
+          {{- end }}
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: toposervice-service-{{ .Release.Name }}
+  labels:
+    app: toposervice-{{ .Release.Name }}
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: topo-port
+  selector:
+    app: toposervice-{{ .Release.Name }}
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: topo-to-mongodb-{{ .Release.Name }}
+spec:
+  podSelector:
+    matchLabels:
+      app: toposervice-{{ .Release.Name }}
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: mongodb-{{ .Release.Name }}
+      ports:
+        - port: 27017
+          protocol: TCP
+---
+  {{- if .Values.config.enableNetworkPolicies }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: topo-from-planner-ingress-{{ .Release.Name }}
+spec:
+  podSelector:
+    matchLabels:
+      app: toposervice-{{ .Release.Name }}
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: planner-{{ .Release.Name }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+  {{- end }}
