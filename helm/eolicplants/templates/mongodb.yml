@@ -16,24 +16,24 @@ spec:
         app: mongodb-{{ .Release.Name }}
     spec:
       containers:
-      - name: mongodb-{{ .Release.Name }}
-        image: {{ .Values.mongodb.image }}:{{ .Values.mongodb.tag }}
-        env:
-        {{- range .Values.mongodb.env }}
-          - name: {{ .name }}
-            value: "{{ .value }}"
-        {{- end }}
-        ports:
-        - containerPort: 27017
-        - containerPort: 27018
-        - containerPort: 27019
-        volumeMounts:
-        - mountPath: /data/db
-          name: datadb
+        - name: mongodb-{{ .Release.Name }}
+          image: {{ .Values.mongodb.image }}:{{ .Values.mongodb.tag }}
+          env:
+            {{- range .Values.mongodb.env }}
+            - name: {{ .name }}
+              value: "{{ .value }}"
+          {{- end }}
+          ports:
+            - containerPort: 27017
+            - containerPort: 27018
+            - containerPort: 27019
+          volumeMounts:
+            - mountPath: /data/db
+              name: datadb
       volumes:
-      - name: datadb
-        persistentVolumeClaim:
-          claimName: mongo-pvc-{{ .Release.Name }}
+        - name: datadb
+          persistentVolumeClaim:
+            claimName: mongo-pvc-{{ .Release.Name }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -41,15 +41,15 @@ metadata:
   name: mongo-pvc-{{ .Release.Name }}
 spec:
   {{- if .Values.config.createPersistenceVolumes }}
-  storageClassName: {{ "mongo" }}-{{ .Release.Name }}
+  storageClassName: {{ "mongodb" }}
   {{ else }}
   storageClassName: {{ .Values.mongodb.storageClassName }}
   {{- end }}
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi          
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
@@ -59,23 +59,23 @@ metadata:
     app: mongodb-{{ .Release.Name }}
 spec:
   ports:
-  - port: 27017
-    targetPort: 27017
-    protocol: TCP
-    name: mongodb-port-27017
-  - port: 27018
-    targetPort: 27018
-    protocol: TCP
-    name: mongodb-port-27018
-  - port: 27019
-    targetPort: 27019
-    protocol: TCP
-    name: mongodb-port-27019
+    - port: 27017
+      targetPort: 27017
+      protocol: TCP
+      name: mongodb-port-27017
+    - port: 27018
+      targetPort: 27018
+      protocol: TCP
+      name: mongodb-port-27018
+    - port: 27019
+      targetPort: 27019
+      protocol: TCP
+      name: mongodb-port-27019
   selector:
     app: mongodb-{{ .Release.Name }}
   type: ClusterIP
 ---
-{{- if .Values.config.enableNetworkPolicies }}
+  {{- if .Values.config.enableNetworkPolicies }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -85,12 +85,12 @@ spec:
     matchLabels:
       app: mongodb-{{ .Release.Name }}
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          app: toposervice-{{ .Release.Name }}
-    ports:
-    - port: 27017
-      protocol: TCP
+    - from:
+        - podSelector:
+            matchLabels:
+              app: toposervice-{{ .Release.Name }}
+      ports:
+        - port: 27017
+          protocol: TCP
 ---
-{{- end }}
+  {{- end }}

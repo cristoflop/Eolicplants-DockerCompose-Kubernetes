@@ -16,22 +16,22 @@ spec:
         app: mysql-{{ .Release.Name }}
     spec:
       containers:
-      - name: mysql-{{ .Release.Name }}
-        image: {{ .Values.mysqldb.image }}:{{ .Values.mysqldb.tag }}
-        env:
-        {{- range .Values.mysqldb.env }}
-          - name: {{ .name }}
-            value: "{{ .value }}"
-        {{- end }}
-        ports:
-        - containerPort: 3306
-        volumeMounts:
-        - mountPath: /var/lib/mysql
-          name: datadb
+        - name: mysql-{{ .Release.Name }}
+          image: {{ .Values.mysqldb.image }}:{{ .Values.mysqldb.tag }}
+          env:
+            {{- range .Values.mysqldb.env }}
+            - name: {{ .name }}
+              value: "{{ .value }}"
+          {{- end }}
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: datadb
       volumes:
-      - name: datadb
-        persistentVolumeClaim:
-          claimName: mysql-pvc-{{ .Release.Name }}
+        - name: datadb
+          persistentVolumeClaim:
+            claimName: mysql-pvc-{{ .Release.Name }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -39,12 +39,12 @@ metadata:
   name: mysql-pvc-{{ .Release.Name }}
 spec:
   {{- if .Values.config.createPersistenceVolumes }}
-  storageClassName: {{ "mysql" }}-{{ .Release.Name }}
+  storageClassName: {{ "mysql" }}
   {{ else }}
   storageClassName: {{ .Values.mysqldb.storageClassName }}
   {{- end }}
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
@@ -57,15 +57,15 @@ metadata:
     app: mysql-{{ .Release.Name }}
 spec:
   ports:
-  - port: 3306
-    targetPort: 3306
-    protocol: TCP
-    name: mysql-port
+    - port: 3306
+      targetPort: 3306
+      protocol: TCP
+      name: mysql-port
   selector:
     app: mysql-{{ .Release.Name }}
   type: ClusterIP
 ---
-{{- if .Values.config.enableNetworkPolicies }}
+  {{- if .Values.config.enableNetworkPolicies }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -75,12 +75,12 @@ spec:
     matchLabels:
       app: mysql-{{ .Release.Name }}
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          app: server-{{ .Release.Name }}
-    ports:
-    - port: 3306
-      protocol: TCP
+    - from:
+        - podSelector:
+            matchLabels:
+              app: server-{{ .Release.Name }}
+      ports:
+        - port: 3306
+          protocol: TCP
 ---
-{{- end }}
+  {{- end }}

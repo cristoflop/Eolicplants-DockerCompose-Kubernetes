@@ -16,23 +16,23 @@ spec:
         app: rabbitmq-{{ .Release.Name }}
     spec:
       containers:
-      - name: rabbitmq-{{ .Release.Name }}
-        image: rabbitmq:3-management
-        env:
-        {{- range .Values.rabbitmq.env }}
-          - name: {{ .name }}
-            value: "{{ .value }}"
-        {{- end }}
-        ports:
-        - containerPort: 5672
-        - containerPort: 15672
-        volumeMounts:
-        - mountPath: /var/lib/rabbitmq/mnesia
-          name: datarabbit
+        - name: rabbitmq
+          image: rabbitmq:3-management
+          env:
+            {{- range .Values.rabbitmq.env }}
+            - name: {{ .name }}
+              value: "{{ .value }}"
+          {{- end }}
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          volumeMounts:
+            - mountPath: /var/lib/rabbitmq/mnesia
+              name: datarabbit
       volumes:
-      - name: datarabbit
-        persistentVolumeClaim:
-          claimName: rabbit-pvc-{{ .Release.Name }}
+        - name: datarabbit
+          persistentVolumeClaim:
+            claimName: rabbit-pvc-{{ .Release.Name }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -40,12 +40,12 @@ metadata:
   name: rabbit-pvc-{{ .Release.Name }}
 spec:
   {{- if .Values.config.createPersistenceVolumes }}
-  storageClassName: {{ "rabbit" }}-{{ .Release.Name }}
+  storageClassName: {{ "rabbit" }}
   {{ else }}
   storageClassName: {{ .Values.rabbitmq.storageClassName }}
   {{- end }}
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
@@ -58,19 +58,19 @@ metadata:
     app: rabbitmq-{{ .Release.Name }}
 spec:
   ports:
-  - port: 5672
-    targetPort: 5672
-    protocol: TCP
-    name: rabbitmq-port-5672
-  - port: 15672
-    targetPort: 15672
-    protocol: TCP
-    name: rabbitmq-port-15672
+    - port: 5672
+      targetPort: 5672
+      protocol: TCP
+      name: rabbitmq-port-5672
+    - port: 15672
+      targetPort: 15672
+      protocol: TCP
+      name: rabbitmq-port-15672
   selector:
     app: rabbitmq-{{ .Release.Name }}
   type: ClusterIP
 ---
-{{- if .Values.config.enableNetworkPolicies }}
+  {{- if .Values.config.enableNetworkPolicies }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -80,15 +80,15 @@ spec:
     matchLabels:
       app: rabbitmq-{{ .Release.Name }}
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          app: planner-{{ .Release.Name }}
-    - podSelector:
-        matchLabels:
-          app: server-{{ .Release.Name }}
-    ports:
-    - port: 5672
-      protocol: TCP
+    - from:
+        - podSelector:
+            matchLabels:
+              app: planner-{{ .Release.Name }}
+        - podSelector:
+            matchLabels:
+              app: server-{{ .Release.Name }}
+      ports:
+        - port: 5672
+          protocol: TCP
 ---
-{{- end }}
+  {{- end }}

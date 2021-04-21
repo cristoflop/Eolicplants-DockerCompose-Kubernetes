@@ -4,7 +4,7 @@ kind: PersistentVolume
 metadata:
   name: mongo-pv-{{ .Release.Name }}
 spec:
-  storageClassName: mongo-{{ .Release.Name }}
+  storageClassName: mongodb
   accessModes:
     - ReadWriteOnce
   capacity:

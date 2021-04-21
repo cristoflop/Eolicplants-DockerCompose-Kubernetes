@@ -12,7 +12,7 @@ egress:
       protocol: UDP
 
 ingress:
-  enabled: false
+  enabled: true
   host: mastercloudapps.host
 
 config:
