@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  eolicplants:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-04-21T13:45:25.163771+02:00"
+    description: A Helm chart for Kubernetes
+    digest: d417d6d0abcac16aed6390619ac0123bf3ffdae5fa30fc67ce028f3ef46aac1b
+    name: eolicplants
+    type: application
+    urls:
+    - eolicplants-0.1.0.tgz
+    version: 0.1.0
+generated: "2021-04-21T13:45:25.1617762+02:00"
